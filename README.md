@@ -1,66 +1,23 @@
-## Foundry
+# Foundry Lottery
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+This is a Foundry project based on the Patrick Collins Solidity Course.
+The objective is to create a provable random smart contract lottery winner.
 
-Foundry consists of:
+## Installation
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+You will need [git](https://github.com/git-guides/install-git) and [Foundry](https://book.getfoundry.sh/getting-started/installation) installed for this project to work.
 
-## Documentation
+Once those are installed, you should be able to have access to the entire project by using this commands:
 
-https://book.getfoundry.sh/
-
-## Usage
-
-### Build
-
-```shell
-$ forge build
+```bash
+git clone https://github.com/CaeraDenoir/solidity-raffle.git
+cd solidity-raffle
+forge build
 ```
 
-### Test
-
-```shell
-$ forge test
-```
-
-### Format
-
-```shell
-$ forge fmt
-```
-
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
-```
+## Objectives
+1. Users can join the lottery by paying some eth
+2. The winner will receive all the ticket fees since the last winner
+3. The winner will be determined every X period of time
+4. The random generated number will be created by the use of Chainlink VRF. [See example](https://docs.chain.link/vrf/v2/subscription/examples/get-a-random-number#create-and-fund-a-subscription)
+5. The automation needed to trigger the contract after X period of time will be based on Chainlink Automation. [See example](https://docs.chain.link/quickstarts/time-based-upkeep)
