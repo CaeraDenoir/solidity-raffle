@@ -21,3 +21,12 @@ forge build
 3. The winner will be determined every X period of time
 4. The random generated number will be created by the use of Chainlink VRF. [See example](https://docs.chain.link/vrf/v2/subscription/examples/get-a-random-number#create-and-fund-a-subscription)
 5. The automation needed to trigger the contract after X period of time will be based on Chainlink Automation. [See example](https://docs.chain.link/quickstarts/time-based-upkeep)
+
+
+## Tests
+1. Write some deploy scripts
+2. Write our tests
+    1. Work on local chain
+    2. Forked Testnet
+    3. Forked Mainnet
+3. 
