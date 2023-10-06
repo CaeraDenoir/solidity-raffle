@@ -22,6 +22,7 @@
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.18;
+
 import {VRFCoordinatorV2Interface} from "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 import {VRFConsumerBaseV2} from "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 
@@ -37,10 +38,7 @@ contract Raffle is VRFConsumerBaseV2 {
     error Raffle__transferFailed();
     error Raffle__calculatingAWinner();
     error Raffle__upkeepNotNeeded(
-        uint256 balance,
-        uint256 raffleState,
-        uint256 playersLength,
-        uint256 timeSinceLastPick
+        uint256 balance, uint256 raffleState, uint256 playersLength, uint256 timeSinceLastPick
     );
 
     //*Type Declarations */
@@ -49,11 +47,15 @@ contract Raffle is VRFConsumerBaseV2 {
         CALCULATING
     }
 
-    /**Constants  */
+    /**
+     * Constants
+     */
     uint16 private constant REQUEST_CONFIRMATIONS = 3;
     uint32 private constant NUM_WORDS = 1;
 
-    /** State Variables */
+    /**
+     * State Variables
+     */
     uint256 private immutable i_entranceFee;
     uint256 private immutable i_interval;
     VRFCoordinatorV2Interface private immutable i_vrfCoordinator;
@@ -98,9 +100,11 @@ contract Raffle is VRFConsumerBaseV2 {
         emit EnteredRaffle(msg.sender);
     }
 
-    function checkUpkeep(
-        bytes memory /*checkData*/
-    ) public view returns (bool upkeepNeeded, bytes memory /* performData */) {
+    function checkUpkeep(bytes memory /*checkData*/ )
+        public
+        view
+        returns (bool upkeepNeeded, bytes memory /* performData */ )
+    {
         bool timeHasPassed = block.timestamp - s_lastTimeStamp >= i_interval;
         bool isOpen = s_raffleState == RaffleState.OPEN;
         bool hasBalance = address(this).balance > 0;
@@ -109,39 +113,29 @@ contract Raffle is VRFConsumerBaseV2 {
         return (upkeepNeeded, "0x0");
     }
 
-    function performUpkeep(bytes calldata /* performData */) external {
-        (bool upkeepNeeded, ) = checkUpkeep("");
+    function performUpkeep(bytes calldata /* performData */ ) external {
+        (bool upkeepNeeded,) = checkUpkeep("");
         if (!upkeepNeeded) {
             revert Raffle__upkeepNotNeeded(
-                address(this).balance,
-                uint256(s_raffleState),
-                s_players.length,
-                block.timestamp - s_lastTimeStamp
+                address(this).balance, uint256(s_raffleState), s_players.length, block.timestamp - s_lastTimeStamp
             );
         }
         s_raffleState = RaffleState.CALCULATING;
 
         // Get the random number -> pick the wallet based on the random number
         i_vrfCoordinator.requestRandomWords(
-            i_gasLane,
-            i_subscriptionId,
-            REQUEST_CONFIRMATIONS,
-            i_callbackGasLimit,
-            NUM_WORDS
+            i_gasLane, i_subscriptionId, REQUEST_CONFIRMATIONS, i_callbackGasLimit, NUM_WORDS
         );
     }
 
-    function fulfillRandomWords(
-        uint256 /*requestId*/,
-        uint256[] memory randomWords
-    ) internal override {
+    function fulfillRandomWords(uint256, /*requestId*/ uint256[] memory randomWords) internal override {
         uint256 indexOfWinner = randomWords[0] % s_players.length;
         address payable winner = s_players[indexOfWinner];
         s_recentWinner = winner;
         s_players = new address payable[](0);
         s_lastTimeStamp = block.timestamp;
 
-        (bool success, ) = winner.call{value: address(this).balance}("");
+        (bool success,) = winner.call{value: address(this).balance}("");
         if (!success) {
             revert Raffle__transferFailed();
         }
@@ -149,8 +143,18 @@ contract Raffle is VRFConsumerBaseV2 {
         emit PickedWinner(winner);
     }
 
-    /** Getter Functions */
+    /**
+     * Getter Functions
+     */
     function getEntranceFee() public view returns (uint256) {
         return i_entranceFee;
+    }
+
+    function getRaffleState() public view returns (RaffleState) {
+        return s_raffleState;
+    }
+
+    function getPlayer(uint256 indexOfPlayer) public view returns (address) {
+        return s_players[indexOfPlayer];
     }
 }
