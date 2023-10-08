@@ -15,6 +15,7 @@ contract raffleTest is Test {
     bytes32 gasLane;
     uint64 subscriptionId;
     uint32 callbackGasLimit;
+    address linkAddress;
 
     /* Events declaration */
     event EnteredRaffle(address indexed player);
@@ -26,8 +27,15 @@ contract raffleTest is Test {
         DeployRaffle deployer = new DeployRaffle();
         (raffle, helperConfig) = deployer.run();
 
-        (entranceFee, interval, vrfCoordinator, gasLane, subscriptionId, callbackGasLimit) =
-            helperConfig.activeNetworkConfig();
+        (
+            entranceFee,
+            interval,
+            vrfCoordinator,
+            gasLane,
+            subscriptionId,
+            callbackGasLimit,
+            linkAddress
+        ) = helperConfig.activeNetworkConfig();
         vm.deal(PLAYER, STARTING_USER_BALANCE);
     }
 
@@ -54,6 +62,10 @@ contract raffleTest is Test {
         raffle.enterRaffle{value: entranceFee}();
         vm.warp(block.timestamp + interval + 1);
         vm.roll(block.number + 1);
+        raffle.performUpkeep("");
+        vm.expectRevert(Raffle.Raffle__calculatingAWinner.selector);
+        vm.prank(PLAYER);
+        raffle.enterRaffle{value: entranceFee}();
     }
 
     function testEventEmitOnEntry() public {
