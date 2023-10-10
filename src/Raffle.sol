@@ -38,10 +38,7 @@ contract Raffle is VRFConsumerBaseV2 {
     error Raffle__transferFailed();
     error Raffle__calculatingAWinner();
     error Raffle__upkeepNotNeeded(
-        uint256 balance,
-        uint256 raffleState,
-        uint256 playersLength,
-        uint256 timeSinceLastPick
+        uint256 balance, uint256 raffleState, uint256 playersLength, uint256 timeSinceLastPick
     );
 
     //*Type Declarations */
@@ -107,9 +104,11 @@ contract Raffle is VRFConsumerBaseV2 {
         emit EnteredRaffle(msg.sender);
     }
 
-    function checkUpkeep(
-        bytes memory /*checkData*/
-    ) public view returns (bool upkeepNeeded, bytes memory /* performData */) {
+    function checkUpkeep(bytes memory /*checkData*/ )
+        public
+        view
+        returns (bool upkeepNeeded, bytes memory /* performData */ )
+    {
         bool timeHasPassed = block.timestamp - s_lastTimeStamp >= i_interval;
         bool isOpen = s_raffleState == RaffleState.OPEN;
         bool hasBalance = address(this).balance > 0;
@@ -118,32 +117,26 @@ contract Raffle is VRFConsumerBaseV2 {
         return (upkeepNeeded, "0x0");
     }
 
-    function performUpkeep(bytes calldata /* performData */) external {
-        (bool upkeepNeeded, ) = checkUpkeep("");
+    function performUpkeep(bytes calldata /* performData */ ) external {
+        (bool upkeepNeeded,) = checkUpkeep("");
         if (!upkeepNeeded) {
             revert Raffle__upkeepNotNeeded(
-                address(this).balance,
-                uint256(s_raffleState),
-                s_players.length,
-                block.timestamp - s_lastTimeStamp
+                address(this).balance, uint256(s_raffleState), s_players.length, block.timestamp - s_lastTimeStamp
             );
         }
         s_raffleState = RaffleState.CALCULATING;
 
         // Get the random number -> pick the wallet based on the random number
         uint256 requestId = i_vrfCoordinator.requestRandomWords(
-            i_gasLane,
-            i_subscriptionId,
-            REQUEST_CONFIRMATIONS,
-            i_callbackGasLimit,
-            NUM_WORDS
+            i_gasLane, i_subscriptionId, REQUEST_CONFIRMATIONS, i_callbackGasLimit, NUM_WORDS
         );
         emit RequestedRaffleWinner(requestId);
     }
 
     function fulfillRandomWords(
         uint256,
-        /*requestId*/ uint256[] memory randomWords
+        /*requestId*/
+        uint256[] memory randomWords
     ) internal override {
         uint256 indexOfWinner = randomWords[0] % s_players.length;
         address payable winner = s_players[indexOfWinner];
@@ -151,7 +144,7 @@ contract Raffle is VRFConsumerBaseV2 {
         s_players = new address payable[](0);
         s_lastTimeStamp = block.timestamp;
 
-        (bool success, ) = winner.call{value: address(this).balance}("");
+        (bool success,) = winner.call{value: address(this).balance}("");
         if (!success) {
             revert Raffle__transferFailed();
         }
@@ -174,7 +167,7 @@ contract Raffle is VRFConsumerBaseV2 {
         return s_players[indexOfPlayer];
     }
 
-    function getNumPlayers() public view returns (uint) {
+    function getNumPlayers() public view returns (uint256) {
         return s_players.length;
     }
 
@@ -184,5 +177,29 @@ contract Raffle is VRFConsumerBaseV2 {
 
     function getLastTimeStamp() public view returns (uint256) {
         return s_lastTimeStamp;
+    }
+
+    function getInterval() public view returns (uint256) {
+        return i_interval;
+    }
+
+    function getVrfcoordinator() public view returns (address) {
+        return address(i_vrfCoordinator);
+    }
+
+    function getGasLane() public view returns (bytes32) {
+        return i_gasLane;
+    }
+
+    function getSubscriptionId() public view returns (uint64) {
+        return i_subscriptionId;
+    }
+
+    function getCallbackGasLimit() public view returns (uint32) {
+        return i_callbackGasLimit;
+    }
+
+    function getLinkAddress() public view returns (address) {
+        return i_address;
     }
 }
